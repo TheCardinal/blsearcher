@@ -4,8 +4,7 @@
     "main": "index.js",
     "scripts": {
       "build": "tsc",
-      "start": "node searchProduct.js",
-      "get-set-name": "node getSetName.js"
+      "start": "node processPartsList.js"
     },
     "keywords": [],
     "author": "",
