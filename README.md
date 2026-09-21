@@ -17,10 +17,10 @@ npm i
 
 To compile run: 
 ```bash
-npx tsc
+npm run build
 ```
 
 To start the program run:
 ```bash
-node searchProduct.js
+npm start
 ```
