@@ -24,3 +24,8 @@ To start the program run:
 ```bash
 npm start
 ```
+
+To look up a LEGO set's name by its set number (via Brickset), run:
+```bash
+npm run get-set-name -- 75192-1
+```
