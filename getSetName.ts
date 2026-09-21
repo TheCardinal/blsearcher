@@ -1,6 +1,8 @@
 import axios from "axios";
+import fs from "fs";
 
 const baseUrl = "https://brickset.com/sets/";
+const outputFilePath = "output.xml";
 
 async function getSetName(setNumber: string): Promise<string | undefined> {
   // Brickset URLs require a variant suffix, e.g. "75192-1"
@@ -32,6 +34,12 @@ getSetName(setNumber)
       process.exit(1);
     }
     console.log(name);
+
+    // Strip characters that are not valid in Windows file names
+    const safeName = name.replace(/[<>:"/\\|?*]/g, "");
+    const newFilePath = `${safeName}.xml`;
+    fs.renameSync(outputFilePath, newFilePath);
+    console.log(`Renamed ${outputFilePath} to ${newFilePath}`);
   })
   .catch((error) => {
     console.error(`Error looking up set ${setNumber}:`, error);
