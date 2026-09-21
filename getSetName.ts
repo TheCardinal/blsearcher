@@ -2,9 +2,8 @@ import axios from "axios";
 import fs from "fs";
 
 const baseUrl = "https://brickset.com/sets/";
-const outputFilePath = "output.xml";
 
-async function getSetName(setNumber: string): Promise<string | undefined> {
+export async function getSetName(setNumber: string): Promise<string | undefined> {
   // Brickset URLs require a variant suffix, e.g. "75192-1"
   const query = setNumber.includes("-") ? setNumber : `${setNumber}-1`;
   const url = `${baseUrl}${query}/`;
@@ -21,27 +20,37 @@ async function getSetName(setNumber: string): Promise<string | undefined> {
   return match?.[1].trim();
 }
 
-const setNumber = process.argv[2];
-if (!setNumber) {
-  console.error("Usage: node getSetName.js <setNumber>"); // e.g. 75192, without the -1 suffix
-  process.exit(1);
+export function renameOutputToSetName(
+  name: string,
+  outputFilePath: string = "output.xml"
+): string {
+  // Strip characters that are not valid in Windows file names
+  const safeName = name.replace(/[<>:"/\\|?*]/g, "");
+  const newFilePath = `${safeName}.xml`;
+  fs.renameSync(outputFilePath, newFilePath);
+  return newFilePath;
 }
 
-getSetName(setNumber)
-  .then((name) => {
-    if (!name) {
-      console.error(`No set found for "${setNumber}"`);
-      process.exit(1);
-    }
-    console.log(name);
-
-    // Strip characters that are not valid in Windows file names
-    const safeName = name.replace(/[<>:"/\\|?*]/g, "");
-    const newFilePath = `${safeName}.xml`;
-    fs.renameSync(outputFilePath, newFilePath);
-    console.log(`Renamed ${outputFilePath} to ${newFilePath}`);
-  })
-  .catch((error) => {
-    console.error(`Error looking up set ${setNumber}:`, error);
+if (require.main === module) {
+  const setNumber = process.argv[2];
+  if (!setNumber) {
+    console.error("Usage: node getSetName.js <setNumber>"); // e.g. 75192, without the -1 suffix
     process.exit(1);
-  });
+  }
+
+  getSetName(setNumber)
+    .then((name) => {
+      if (!name) {
+        console.error(`No set found for "${setNumber}"`);
+        process.exit(1);
+      }
+      console.log(name);
+
+      const newFilePath = renameOutputToSetName(name);
+      console.log(`Renamed output.xml to ${newFilePath}`);
+    })
+    .catch((error) => {
+      console.error(`Error looking up set ${setNumber}:`, error);
+      process.exit(1);
+    });
+}

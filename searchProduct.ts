@@ -1,12 +1,19 @@
 import axios from "axios";
 import csv from "csv-parser";
 import fs from "fs";
+import { getSetName, renameOutputToSetName } from "./getSetName";
 
 const baseUrl =
   "https://www.bricklink.com/ajax/clone/search/searchproduct.ajax?q=";
 const filePath = "parts_list.csv";
 const outputFilePath = "output.xml"; // Define the output file path
 const writeStream = fs.createWriteStream(outputFilePath, { flags: "w" }); // Create a write stream
+
+const setNumber = process.argv[2];
+if (!setNumber) {
+  console.error("Usage: node searchProduct.js <setNumber>");
+  process.exit(1);
+}
 
 const readCsvFile = (filePath: string): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
@@ -109,6 +116,17 @@ readCsvFile(filePath)
 
     await Promise.all(productPromises); // Wait for all promises to resolve
     writeStream.end("</INVENTORY>\n"); // End the XML root element
+    await new Promise<void>((resolve) => writeStream.on("finish", resolve));
+
+    const name = await getSetName(setNumber);
+    if (name) {
+      const newFilePath = renameOutputToSetName(name, outputFilePath);
+      console.log(`\nRenamed ${outputFilePath} to ${newFilePath}`);
+    } else {
+      console.error(
+        `\nNo set found for "${setNumber}", leaving ${outputFilePath} as is.`
+      );
+    }
   })
   .catch((error) => {
     console.error("Error reading CSV file:", error);

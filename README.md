@@ -22,8 +22,10 @@ npm run build
 
 To start the program run:
 ```bash
-npm start
+npm start -- 75192
 ```
+
+This processes `parts_list.csv` into `output.xml`, then looks up the set's name on Brickset and renames the file accordingly (e.g. `75192 Millennium Falcon.xml`).
 
 To look up a LEGO set's name by its set number (via Brickset), run:
 ```bash
