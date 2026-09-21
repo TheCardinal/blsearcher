@@ -22,5 +22,12 @@ npm run build
 
 To start the program run:
 ```bash
+npm start -- 75192
+```
+
+This processes `parts_list.csv` into `output.xml`, then looks up the set's name on Brickset and renames the file accordingly (e.g. `75192 Millennium Falcon.xml`).
+
+The set number is optional. If omitted, the file is left as `output.xml`:
+```bash
 npm start
 ```
