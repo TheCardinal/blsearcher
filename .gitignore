@@ -11,3 +11,4 @@
 # compiled ts
 *.js
 output.xml
+parts_list.csv
