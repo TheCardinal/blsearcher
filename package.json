@@ -4,7 +4,8 @@
     "main": "index.js",
     "scripts": {
       "build": "tsc",
-      "start": "node processPartsList.js"
+      "start": "node processPartsList.js",
+      "download": "node downloadInventory.js"
     },
     "keywords": [],
     "author": "",

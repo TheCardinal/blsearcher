@@ -1,6 +1,7 @@
 import axios from "axios";
 import csv from "csv-parser";
 import fs from "fs";
+import { BricklinkItem, createRebrickableResolver } from "./rebrickable";
 
 const baseUrl =
   "https://www.bricklink.com/ajax/clone/search/searchproduct.ajax?q=";
@@ -9,7 +10,9 @@ const filePath = "parts_list.csv";
 const outputFilePath = "output.xml"; // Define the output file path
 const writeStream = fs.createWriteStream(outputFilePath, { flags: "w" }); // Create a write stream
 
-const setNumber = process.argv[2]; // optional; skips the set-name lookup/rename if omitted
+const args = process.argv.slice(2);
+const useRebrickable = args.includes("--rebrickable"); // translate via Rebrickable instead of Bricklink search
+const setNumber = args.find((arg) => !arg.startsWith("--")); // optional; skips the set-name lookup/rename if omitted
 
 const readCsvFile = (filePath: string): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
@@ -128,8 +131,30 @@ readCsvFile(filePath)
     );
     writeStream.write('<?xml version="1.0" encoding="UTF-8"?>\n<INVENTORY>\n'); // Start the XML root element
 
+    let resolveRebrickable: (elementId: string) => BricklinkItem | undefined =
+      () => undefined;
+    if (useRebrickable) {
+      const apiKey = process.env.REBRICKABLE_API_KEY;
+      if (!apiKey) {
+        throw new Error("Set the REBRICKABLE_API_KEY environment variable");
+      }
+      resolveRebrickable = await createRebrickableResolver(
+        apiKey,
+        lines.map((line) => line[1])
+      );
+    }
+
     const productPromises = lines.map(async (line) => {
-      const product = await searchProduct(line[1]);
+      let product: Product;
+      if (useRebrickable) {
+        const found = resolveRebrickable(line[1]);
+        product = new Product(found?.itemId ?? line[1], found?.color ?? "", "");
+        if (!found?.color) {
+          console.error(`\nNo Bricklink mapping found for ${line[1]}`);
+        }
+      } else {
+        product = await searchProduct(line[1]);
+      }
       product.minqty = line[0];
       writeStream.write(product.toString() + "\n"); // Write each product to the file
     });

@@ -20,6 +20,11 @@ To compile run:
 npm run build
 ```
 
+To download a set's inventory from Brickset into `parts_list.csv` (instead of extracting it from a PDF), run:
+```bash
+npm run download -- 10371
+```
+
 To start the program run:
 ```bash
 npm start -- 75192
@@ -31,3 +36,10 @@ The set number is optional. If omitted, the file is left as `output.xml`:
 ```bash
 npm start
 ```
+
+If Bricklink is unavailable, translate the part codes through Rebrickable instead (requires a free [Rebrickable API key](https://rebrickable.com/api/)):
+```powershell
+$env:REBRICKABLE_API_KEY = "your key"
+npm start -- 75192 --rebrickable
+```
+It maps element IDs (e.g. `6371584`) to Bricklink item IDs and color IDs (e.g. `78258` / `11`) using Rebrickable's element list and API. Elements it can't map are reported and left with an empty color.
